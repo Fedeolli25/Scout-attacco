@@ -48,6 +48,10 @@
     text-transform:uppercase;
     color:var(--chalk);
     line-height:1;
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:4px;
   }
   .sb-sub{
     font-family:'JetBrains Mono', monospace;
@@ -58,6 +62,29 @@
     margin-top:4px;
   }
   .sb-actions{display:flex; gap:8px;}
+  .sync-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.5px;
+    padding:4px 10px; border-radius:20px; border:1px solid var(--line); color:var(--chalk-dim);
+    margin-left:10px; vertical-align:middle; text-transform:uppercase;
+  }
+  .sync-pill .dot{width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0;}
+  .sync-pill.connected{color:var(--c-point); border-color:var(--c-point);}
+  .sync-pill.connecting{color:var(--c-covered); border-color:var(--c-covered);}
+  .sync-pill.error{color:var(--c-blockpt); border-color:var(--c-blockpt);}
+  .sync-panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; display:none;
+  }
+  .sync-panel.open{display:block;}
+  .sync-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px;}
+  .sync-row input[type=text]{
+    flex:1; min-width:220px; background:var(--court-ink); border:1px solid var(--line); border-radius:6px;
+    color:var(--chalk); padding:8px 10px; font-size:13px; font-family:'JetBrains Mono',monospace;
+  }
+  .sync-row input[type=text]:focus{outline:none; border-color:var(--parquet);}
+  .sync-status-line{font-size:12px; color:var(--chalk-dim); line-height:1.6;}
+  .sync-status-line b{color:var(--chalk);}
   .btn{
     font-family:'Inter',sans-serif;
     font-size:13px;
@@ -665,6 +692,44 @@ function RadarChart({ dataSets }) {
     );
   }));
 }
+function jsonpRequest(baseUrl, params, timeoutMs) {
+  timeoutMs = timeoutMs || 12e3;
+  return new Promise((resolve, reject) => {
+    const cbName = "__rgs_cb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    const script = document.createElement("script");
+    let done = false;
+    let timer = null;
+    function cleanup() {
+      done = true;
+      try {
+        delete window[cbName];
+      } catch (e) {
+        window[cbName] = void 0;
+      }
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (timer) clearTimeout(timer);
+    }
+    window[cbName] = function(data) {
+      if (done) return;
+      cleanup();
+      resolve(data);
+    };
+    const qs = Object.keys(params).map((k) => encodeURIComponent(k) + "=" + encodeURIComponent(params[k])).join("&");
+    const sep = baseUrl.indexOf("?") === -1 ? "?" : "&";
+    script.src = baseUrl + sep + qs + "&callback=" + cbName;
+    script.onerror = function() {
+      if (done) return;
+      cleanup();
+      reject(new Error("Errore di rete"));
+    };
+    timer = setTimeout(function() {
+      if (done) return;
+      cleanup();
+      reject(new Error("Timeout \u2014 controlla il link"));
+    }, timeoutMs);
+    document.body.appendChild(script);
+  });
+}
 function App() {
   var _a;
   const [loaded, setLoaded] = useState(false);
@@ -681,6 +746,17 @@ function App() {
   const [sortDir, setSortDir] = useState("desc");
   const [radarPlayerId, setRadarPlayerId] = useState("");
   const saveTimer = useRef(null);
+  const [syncUrl, setSyncUrl] = useState("");
+  const [syncUrlDraft, setSyncUrlDraft] = useState("");
+  const [syncStatus, setSyncStatus] = useState("disconnected");
+  const [syncError, setSyncError] = useState("");
+  const [lastSyncAt, setLastSyncAt] = useState(null);
+  const [syncOpen, setSyncOpen] = useState(false);
+  const pollTimer = useRef(null);
+  const configPushTimer = useRef(null);
+  const lastLocalConfigEditAt = useRef(0);
+  const lastConfigUpdatedAtApplied = useRef(0);
+  const deletedIdsRef = useRef(/* @__PURE__ */ new Set());
   useEffect(() => {
     (async () => {
       try {
@@ -708,6 +784,138 @@ function App() {
       }
     }, 350);
   }, [players, setters, activeSetter, events, loaded]);
+  useEffect(() => {
+    try {
+      const savedUrl = localStorage.getItem("rgs__syncUrl");
+      if (savedUrl) {
+        setSyncUrl(savedUrl);
+        setSyncUrlDraft(savedUrl);
+      }
+    } catch (e) {
+    }
+  }, []);
+  useEffect(() => {
+    if (loaded && syncUrl && syncStatus === "disconnected") {
+      connectSync(syncUrl);
+    }
+  }, [loaded, syncUrl]);
+  useEffect(() => {
+    if (syncStatus !== "connected" || !syncUrl) {
+      if (pollTimer.current) {
+        clearInterval(pollTimer.current);
+        pollTimer.current = null;
+      }
+      return;
+    }
+    pollTimer.current = setInterval(() => {
+      pullEvents(syncUrl);
+      jsonpRequest(syncUrl, { action: "getConfig" }).then((res) => {
+        if (res && res.ok !== false) applyRemoteConfig(res.config);
+      }).catch(() => {
+      });
+    }, 4e3);
+    return () => {
+      if (pollTimer.current) {
+        clearInterval(pollTimer.current);
+        pollTimer.current = null;
+      }
+    };
+  }, [syncStatus, syncUrl]);
+  useEffect(() => {
+    if (!loaded) return;
+    lastLocalConfigEditAt.current = Date.now();
+    if (syncStatus !== "connected" || !syncUrl) return;
+    if (configPushTimer.current) clearTimeout(configPushTimer.current);
+    configPushTimer.current = setTimeout(() => {
+      pushConfig();
+    }, 700);
+  }, [players, setters, activeSetter, syncStatus, syncUrl, loaded]);
+  function applyRemoteConfig(configRaw) {
+    if (!configRaw) {
+      pushConfig();
+      return;
+    }
+    try {
+      const cfg = typeof configRaw === "string" ? JSON.parse(configRaw) : configRaw;
+      const updatedAt = cfg.updatedAt || 0;
+      if (updatedAt && updatedAt <= lastConfigUpdatedAtApplied.current) return;
+      if (Date.now() - lastLocalConfigEditAt.current < 4e3) return;
+      if (cfg.players && cfg.players.length) setPlayers(cfg.players);
+      if (cfg.setters && cfg.setters.length) setSetters(cfg.setters);
+      if (cfg.activeSetter) setActiveSetter(cfg.activeSetter);
+      lastConfigUpdatedAtApplied.current = updatedAt || Date.now();
+    } catch (e) {
+    }
+  }
+  function pushConfig() {
+    if (syncStatus !== "connected" || !syncUrl) return;
+    const updatedAt = Date.now();
+    const configStr = JSON.stringify({ players, setters, activeSetter, updatedAt });
+    lastConfigUpdatedAtApplied.current = updatedAt;
+    jsonpRequest(syncUrl, { action: "setConfig", config: configStr }).catch((e) => console.error("Errore invio config", e));
+  }
+  async function pullEvents(url) {
+    try {
+      const res = await jsonpRequest(url, { action: "getEvents" });
+      if (!res || res.ok === false) throw new Error(res && res.error || "Risposta non valida");
+      const remote = (res.events || []).filter((r) => r.id && !deletedIdsRef.current.has(String(r.id))).map((r) => ({ id: String(r.id), ts: Number(r.ts) || Date.now(), team: r.team, playerId: r.playerId, setterId: r.setterId, code: r.code }));
+      setEvents((prev) => {
+        const map = /* @__PURE__ */ new Map();
+        prev.forEach((e) => map.set(e.id, e));
+        remote.forEach((e) => map.set(e.id, e));
+        deletedIdsRef.current.forEach((id) => map.delete(id));
+        const merged = Array.from(map.values());
+        merged.sort((a, b) => a.ts - b.ts);
+        return merged;
+      });
+      setLastSyncAt(Date.now());
+      setSyncStatus("connected");
+      setSyncError("");
+    } catch (e) {
+      setSyncStatus("error");
+      setSyncError(e.message || "Errore di sincronizzazione");
+    }
+  }
+  async function connectSync(url) {
+    const clean = (url || "").trim();
+    if (!clean) {
+      showToast("Incolla prima il link del foglio condiviso");
+      return;
+    }
+    setSyncStatus("connecting");
+    setSyncError("");
+    try {
+      const res = await jsonpRequest(clean, { action: "getConfig" });
+      if (!res || res.ok === false) throw new Error(res && res.error || "Risposta non valida dal foglio");
+      try {
+        localStorage.setItem("rgs__syncUrl", clean);
+      } catch (e) {
+      }
+      setSyncUrl(clean);
+      setSyncStatus("connected");
+      applyRemoteConfig(res.config);
+      await pullEvents(clean);
+      setLastSyncAt(Date.now());
+      showToast("Connesso al foglio condiviso");
+    } catch (e) {
+      setSyncStatus("error");
+      setSyncError(e.message || "Impossibile connettersi. Controlla il link.");
+    }
+  }
+  function disconnectSync() {
+    setSyncStatus("disconnected");
+    setSyncUrl("");
+    setSyncError("");
+    try {
+      localStorage.removeItem("rgs__syncUrl");
+    } catch (e) {
+    }
+    if (pollTimer.current) {
+      clearInterval(pollTimer.current);
+      pollTimer.current = null;
+    }
+    showToast("Disconnesso dal foglio condiviso");
+  }
   function showToast(msg) {
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -724,13 +932,38 @@ function App() {
     setEvents((prev) => [...prev, ev]);
     const pname = ((_a2 = players.find((p) => p.id === playerId)) == null ? void 0 : _a2.name) || "";
     showToast(pname + " \u2192 " + code);
+    if (syncStatus === "connected" && syncUrl) {
+      jsonpRequest(syncUrl, {
+        action: "addEvent",
+        id: ev.id,
+        ts: ev.ts,
+        team: ev.team,
+        playerId: ev.playerId,
+        playerName: pname,
+        setterId: ev.setterId,
+        setterName: setterName(setterId),
+        code: ev.code
+      }).catch((e) => console.error("Errore invio pallone", e));
+    }
   }
   function undoLast() {
-    setEvents((prev) => prev.slice(0, -1));
+    setEvents((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      deletedIdsRef.current.add(last.id);
+      if (syncStatus === "connected" && syncUrl) {
+        jsonpRequest(syncUrl, { action: "deleteEvent", id: last.id }).catch((e) => console.error("Errore eliminazione remota", e));
+      }
+      return prev.slice(0, -1);
+    });
   }
   function resetAll() {
     if (!window.confirm("Cancellare tutti i palloni registrati? I roster restano invariati.")) return;
+    events.forEach((e) => deletedIdsRef.current.add(e.id));
     setEvents([]);
+    if (syncStatus === "connected" && syncUrl) {
+      jsonpRequest(syncUrl, { action: "resetEvents" }).catch((e) => console.error("Errore reset remoto", e));
+    }
   }
   function downloadCSV(filename, csvString) {
     const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
@@ -884,7 +1117,15 @@ function App() {
   if (!loaded) {
     return /* @__PURE__ */ React.createElement("div", { style: { padding: "40px", textAlign: "center", color: "var(--chalk-dim)" } }, "Caricamento dati\u2026");
   }
-  return /* @__PURE__ */ React.createElement("div", { className: "wrap" }, /* @__PURE__ */ React.createElement("div", { className: "scoreboard" }, /* @__PURE__ */ React.createElement("div", { className: "sb-top" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "sb-title" }, "Regia Attacco"), /* @__PURE__ */ React.createElement("div", { className: "sb-sub" }, "Qualit\xE0 attacco \xD7  correlazione alzatori \u2014 metodo SFERA")), /* @__PURE__ */ React.createElement("div", { className: "sb-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => setSetupOpen((o) => !o) }, setupOpen ? "Nascondi nomi" : "Modifica nomi"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportLogCSV, disabled: events.length === 0 }, "Esporta log CSV"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportSummaryCSV, disabled: rows.length === 0 }, "Esporta riepilogo CSV"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: undoLast, disabled: events.length === 0 }, "Annulla ultimo"), /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: resetAll, disabled: events.length === 0 }, "Reset palloni")))), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "00"), " Nomi squadra & alzatori"), /* @__PURE__ */ React.createElement("div", { className: "setup" + (setupOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("div", { className: "setup-grid" }, /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Attaccanti (10) \u2014 squadra"), players.map((p) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: p.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: p.name, onChange: (e) => updatePlayerName(p.id, e.target.value) }), /* @__PURE__ */ React.createElement("div", { className: "team-toggle" }, /* @__PURE__ */ React.createElement("button", { className: p.team === "A" ? "active-a" : "", onClick: () => updatePlayerTeam(p.id, "A") }, "A"), /* @__PURE__ */ React.createElement("button", { className: p.team === "B" ? "active-b" : "", onClick: () => updatePlayerTeam(p.id, "B") }, "B"))))), /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Alzatori (3)"), setters.map((s) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: s.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: s.name, onChange: (e) => updateSetterName(s.id, e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16, fontSize: 12.5, color: "var(--chalk-dim)", lineHeight: 1.5 } }, "Assegna ogni attaccante a squadra A o B qui a fianco. In campo, seleziona per ciascuna squadra l'alzatore attualmente in gioco: ogni pallone registrato verr\xE0 associato a quell'alzatore.")))), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "01"), " Registrazione palloni"), /* @__PURE__ */ React.createElement("div", { className: "courts" }, ["A", "B"].map((team) => /* @__PURE__ */ React.createElement("div", { className: "court team-" + team.toLowerCase(), key: team }, /* @__PURE__ */ React.createElement("div", { className: "court-head" }, /* @__PURE__ */ React.createElement("div", { className: "court-name" }, "Squadra ", team), /* @__PURE__ */ React.createElement("div", { className: "setter-select" }, /* @__PURE__ */ React.createElement("label", null, "Alzatore"), /* @__PURE__ */ React.createElement("select", { value: activeSetter[team] || "", onChange: (e) => setActiveSetter((prev) => ({ ...prev, [team]: e.target.value })) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"), setters.map((s) => /* @__PURE__ */ React.createElement("option", { value: s.id, key: s.id }, s.name))))), playersByTeam(team).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "no-players" }, 'Nessun attaccante assegnato a questa squadra. Usa "Roster & alzatori".'), playersByTeam(team).map((p) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "wrap" }, /* @__PURE__ */ React.createElement("div", { className: "scoreboard" }, /* @__PURE__ */ React.createElement("div", { className: "sb-top" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "sb-title" }, "Regia Attacco", /* @__PURE__ */ React.createElement("span", { className: "sync-pill " + syncStatus }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), syncStatus === "connected" && "Condiviso", syncStatus === "connecting" && "Connessione\u2026", syncStatus === "error" && "Errore sync", syncStatus === "disconnected" && "Solo locale")), /* @__PURE__ */ React.createElement("div", { className: "sb-sub" }, "Qualit\xE0 attacco \xD7  correlazione alzatori \u2014 metodo SFERA")), /* @__PURE__ */ React.createElement("div", { className: "sb-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => setSyncOpen((o) => !o) }, syncOpen ? "Chiudi condivisione" : "Condivisione"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => setSetupOpen((o) => !o) }, setupOpen ? "Nascondi nomi" : "Modifica nomi"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportLogCSV, disabled: events.length === 0 }, "Esporta log CSV"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportSummaryCSV, disabled: rows.length === 0 }, "Esporta riepilogo CSV"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: undoLast, disabled: events.length === 0 }, "Annulla ultimo"), /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: resetAll, disabled: events.length === 0 }, "Reset palloni")))), /* @__PURE__ */ React.createElement("div", { className: "sync-panel" + (syncOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("div", { className: "sync-row" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "text",
+      placeholder: "Incolla qui l'URL del Web App di Google Apps Script (\u2026/exec)",
+      value: syncUrlDraft,
+      onChange: (e) => setSyncUrlDraft(e.target.value)
+    }
+  ), syncStatus === "connected" ? /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: disconnectSync }, "Disconnetti") : /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => connectSync(syncUrlDraft), disabled: syncStatus === "connecting" }, syncStatus === "connecting" ? "Connessione\u2026" : "Connetti"), syncStatus === "connected" && /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => pullEvents(syncUrl) }, "Sincronizza ora")), /* @__PURE__ */ React.createElement("div", { className: "sync-status-line" }, syncStatus === "connected" && /* @__PURE__ */ React.createElement(React.Fragment, null, "Connesso al foglio condiviso \u2014 ", /* @__PURE__ */ React.createElement("b", null, players.length, " attaccanti"), ", ", /* @__PURE__ */ React.createElement("b", null, setters.length, " alzatori"), ", ", /* @__PURE__ */ React.createElement("b", null, events.length, " palloni"), " sincronizzati. ", lastSyncAt && "Ultimo aggiornamento: " + new Date(lastSyncAt).toLocaleTimeString("it-IT")), syncStatus === "error" && /* @__PURE__ */ React.createElement(React.Fragment, null, "Connessione non riuscita: ", syncError, `. Verifica di aver incollato l'URL corretto e che il Web App sia pubblicato con accesso "Chiunque abbia il link".`), syncStatus === "connecting" && "Connessione al foglio in corso\u2026", syncStatus === "disconnected" && "Nessuna condivisione attiva: i dati restano solo su questo dispositivo. Incolla il link del Web App di Google Apps Script per abilitare la sincronizzazione in tempo reale tra pi\xF9 dispositivi.")), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "00"), " Nomi squadra & alzatori"), /* @__PURE__ */ React.createElement("div", { className: "setup" + (setupOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("div", { className: "setup-grid" }, /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Attaccanti (10) \u2014 squadra"), players.map((p) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: p.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: p.name, onChange: (e) => updatePlayerName(p.id, e.target.value) }), /* @__PURE__ */ React.createElement("div", { className: "team-toggle" }, /* @__PURE__ */ React.createElement("button", { className: p.team === "A" ? "active-a" : "", onClick: () => updatePlayerTeam(p.id, "A") }, "A"), /* @__PURE__ */ React.createElement("button", { className: p.team === "B" ? "active-b" : "", onClick: () => updatePlayerTeam(p.id, "B") }, "B"))))), /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Alzatori (3)"), setters.map((s) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: s.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: s.name, onChange: (e) => updateSetterName(s.id, e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16, fontSize: 12.5, color: "var(--chalk-dim)", lineHeight: 1.5 } }, "Assegna ogni attaccante a squadra A o B qui a fianco. In campo, seleziona per ciascuna squadra l'alzatore attualmente in gioco: ogni pallone registrato verr\xE0 associato a quell'alzatore.")))), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "01"), " Registrazione palloni"), /* @__PURE__ */ React.createElement("div", { className: "courts" }, ["A", "B"].map((team) => /* @__PURE__ */ React.createElement("div", { className: "court team-" + team.toLowerCase(), key: team }, /* @__PURE__ */ React.createElement("div", { className: "court-head" }, /* @__PURE__ */ React.createElement("div", { className: "court-name" }, "Squadra ", team), /* @__PURE__ */ React.createElement("div", { className: "setter-select" }, /* @__PURE__ */ React.createElement("label", null, "Alzatore"), /* @__PURE__ */ React.createElement("select", { value: activeSetter[team] || "", onChange: (e) => setActiveSetter((prev) => ({ ...prev, [team]: e.target.value })) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"), setters.map((s) => /* @__PURE__ */ React.createElement("option", { value: s.id, key: s.id }, s.name))))), playersByTeam(team).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "no-players" }, 'Nessun attaccante assegnato a questa squadra. Usa "Roster & alzatori".'), playersByTeam(team).map((p) => {
     const myEvents = events.filter((e) => e.playerId === p.id);
     return /* @__PURE__ */ React.createElement("div", { className: "attacker-card", key: p.id }, /* @__PURE__ */ React.createElement("div", { className: "attacker-top" }, /* @__PURE__ */ React.createElement("div", { className: "attacker-name" }, p.name), /* @__PURE__ */ React.createElement("div", { className: "attacker-count" }, myEvents.length, " palloni")), /* @__PURE__ */ React.createElement("div", { className: "code-row" }, CODES.map((c) => /* @__PURE__ */ React.createElement(
       "button",
