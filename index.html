@@ -645,6 +645,18 @@ const defaultSetters = () => Array.from({ length: 4 }, (_, i) => ({ id: "s" + (i
 function todayISO() {
   return (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
 }
+function ensureMinSetters(list, minCount) {
+  minCount = minCount || 4;
+  let out = list.slice();
+  const existingIds = new Set(out.map((s) => s.id));
+  for (let i = out.length; i < minCount; i++) {
+    let id = "s" + (i + 1);
+    while (existingIds.has(id)) id = id + "_x";
+    existingIds.add(id);
+    out.push({ id, name: "Alzatore " + (i + 1) });
+  }
+  return out;
+}
 function pct(n, d) {
   if (!d) return null;
   return n / d * 100;
@@ -818,7 +830,7 @@ function App() {
         if (res && res.value) {
           const data = JSON.parse(res.value);
           if (data.players) setPlayers(data.players);
-          if (data.setters) setSetters(data.setters);
+          if (data.setters) setSetters(ensureMinSetters(data.setters, 4));
           if (data.activeSetter) setActiveSetter(data.activeSetter);
           if (data.events) setEvents(data.events);
           if (data.sessionDate) setSessionDate(data.sessionDate);
@@ -896,7 +908,7 @@ function App() {
       if (updatedAt && updatedAt <= lastConfigUpdatedAtApplied.current) return;
       if (Date.now() - lastLocalConfigEditAt.current < 4e3) return;
       if (cfg.players && cfg.players.length) setPlayers(cfg.players);
-      if (cfg.setters && cfg.setters.length) setSetters(cfg.setters);
+      if (cfg.setters && cfg.setters.length) setSetters(ensureMinSetters(cfg.setters, 4));
       if (cfg.activeSetter) setActiveSetter(cfg.activeSetter);
       lastConfigUpdatedAtApplied.current = updatedAt || Date.now();
     } catch (e) {
