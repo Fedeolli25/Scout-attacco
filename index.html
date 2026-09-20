@@ -1,6 +1,9 @@
+
+
+Index · HTML
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
+ 
 <style>
   :root{
     --court-ink:#10161d;
@@ -23,7 +26,7 @@
   *{box-sizing:border-box;}
   body{margin:0;background:var(--court-ink);color:var(--chalk);font-family:'Inter',sans-serif;}
   .wrap{max-width:1200px;margin:0 auto;padding:20px 18px 60px;}
-
+ 
   /* header / scoreboard */
   .scoreboard{
     background:linear-gradient(180deg, var(--court-ink-2), var(--court-ink));
@@ -103,7 +106,7 @@
   .btn.primary{background:var(--parquet); color:#20140a; border-color:var(--parquet);}
   .btn.primary:hover{color:#20140a; filter:brightness(1.08);}
   .btn:disabled{opacity:0.35; cursor:not-allowed;}
-
+ 
   /* section headers */
   .section-label{
     font-family:'Barlow Condensed', sans-serif;
@@ -117,7 +120,7 @@
   }
   .section-label .num{color:var(--parquet); font-family:'JetBrains Mono',monospace; font-size:13px;}
   .section-label::after{content:""; flex:1; height:1px; background:var(--line);}
-
+ 
   /* setup panel */
   .session-date-row{
     display:flex; align-items:center; gap:10px; flex-wrap:wrap;
@@ -129,13 +132,17 @@
     font-family:'JetBrains Mono',monospace;
   }
   .session-date-hint{font-size:11.5px; color:var(--chalk-dim); flex:1; min-width:200px;}
+  .session-count{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--parquet);
+    white-space:nowrap; padding:4px 10px; border:1px solid var(--line); border-radius:20px;
+  }
   input[type=date]{
     background:var(--court-ink); border:1px solid var(--line); border-radius:6px;
     color:var(--chalk); padding:6px 9px; font-size:13px; font-family:'JetBrains Mono',monospace;
     cursor:pointer; color-scheme:dark;
   }
   input[type=date]:focus{outline:none; border-color:var(--parquet);}
-
+ 
   .setup{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
     padding:16px; display:none;
@@ -165,7 +172,7 @@
   }
   .team-toggle button.active-a{background:var(--net-teal); color:#fff;}
   .team-toggle button.active-b{background:var(--parquet); color:#20140a;}
-
+ 
   /* court panels */
   .courts{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
   @media(max-width:820px){ .courts{grid-template-columns:1fr;} }
@@ -182,7 +189,7 @@
   .court.team-a .court-name{color:var(--net-teal);}
   .court.team-b .court-name{color:var(--parquet);}
   .setter-select label{font-size:11px; color:var(--chalk-dim); margin-right:6px; text-transform:uppercase; letter-spacing:1px;}
-
+ 
   .attacker-card{
     background:var(--court-ink); border:1px solid var(--line); border-radius:8px;
     padding:10px 12px; margin-bottom:8px;
@@ -209,13 +216,13 @@
     display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 0; font-size:11.5px; color:var(--chalk-dim);
   }
   .legend span.dot{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:middle;}
-
+ 
   .no-players{color:var(--chalk-dim); font-size:13px; font-style:italic; padding:8px 2px;}
-
+ 
   /* stats */
   .stats-controls{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:center;}
   .stats-controls label{font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--chalk-dim); margin-right:4px;}
-
+ 
   .kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;}
   @media(max-width:720px){ .kpi-row{grid-template-columns:repeat(2,1fr);} }
   .kpi{
@@ -226,7 +233,7 @@
   .kpi .val{font-family:'Barlow Condensed',sans-serif; font-size:30px; font-weight:800; margin-top:2px;}
   .kpi .val.pos{color:var(--c-point);}
   .kpi .val.eff{color:var(--parquet);}
-
+ 
   table.stat-table{width:100%; border-collapse:collapse; font-size:13px;}
   .table-wrap{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
   .table-scroll{overflow-x:auto;}
@@ -246,7 +253,7 @@
   .bar-fill{height:100%; background:var(--c-point);}
   .bar-fill.eff{background:var(--parquet);}
   .empty-note{padding:20px; text-align:center; color:var(--chalk-dim); font-size:13px;}
-
+ 
   /* radar */
   .radar-wrap{display:grid; grid-template-columns:260px 1fr; gap:20px; align-items:center;}
   @media(max-width:720px){ .radar-wrap{grid-template-columns:1fr;} }
@@ -257,7 +264,7 @@
   .radar-mini-table{width:100%; font-size:12.5px; margin-top:10px; border-collapse:collapse;}
   .radar-mini-table th, .radar-mini-table td{padding:5px 8px; text-align:left; border-bottom:1px solid var(--line);}
   .radar-mini-table th{color:var(--chalk-dim); font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:1px;}
-
+ 
   /* export */
   .export-panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px; display:flex; flex-direction:column; gap:14px;}
   .export-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
@@ -267,7 +274,7 @@
   }
   .export-row input[type=text]:focus{outline:none; border-color:var(--parquet);}
   .export-note{font-size:11.5px; color:var(--chalk-dim); line-height:1.6;}
-
+ 
   /* radar section */
   .radar-wrap{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
@@ -285,7 +292,7 @@
   .radar-legend-item .rl-name{font-weight:600; flex:1;}
   .radar-legend-item .rl-n{font-family:'JetBrains Mono',monospace; color:var(--chalk-dim); font-size:11px;}
   .radar-empty{color:var(--chalk-dim); font-size:13px; font-style:italic; grid-column:1/-1; text-align:center; padding:20px;}
-
+ 
   .toast{
     position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
     background:var(--panel); border:1px solid var(--parquet); color:var(--chalk);
@@ -328,7 +335,7 @@ render:a}};c.isValidElement=M;c.lazy=function(a){return{$$typeof:Aa,_payload:{_s
 c.useEffect=function(a,b){return g.current.useEffect(a,b)};c.useId=function(){return g.current.useId()};c.useImperativeHandle=function(a,b,c){return g.current.useImperativeHandle(a,b,c)};c.useInsertionEffect=function(a,b){return g.current.useInsertionEffect(a,b)};c.useLayoutEffect=function(a,b){return g.current.useLayoutEffect(a,b)};c.useMemo=function(a,b){return g.current.useMemo(a,b)};c.useReducer=function(a,b,c){return g.current.useReducer(a,b,c)};c.useRef=function(a){return g.current.useRef(a)};
 c.useState=function(a){return g.current.useState(a)};c.useSyncExternalStore=function(a,b,c){return g.current.useSyncExternalStore(a,b,c)};c.useTransition=function(){return g.current.useTransition()};c.version="18.3.1"});
 })();
-
+ 
 </script>
 <script>
 /**
@@ -598,7 +605,7 @@ c,!1,d,e);a[Ja]=b.current;sc(8===a.nodeType?a.parentNode:a);return new Xf(b)};Q.
 var d=null!=c&&c.hydratedSources||null,e=!1,f="",g=aj;null!==c&&void 0!==c&&(!0===c.unstable_strictMode&&(e=!0),void 0!==c.identifierPrefix&&(f=c.identifierPrefix),void 0!==c.onRecoverableError&&(g=c.onRecoverableError));b=Wi(b,null,a,1,null!=c?c:null,e,!1,f,g);a[Ja]=b.current;sc(a);if(d)for(a=0;a<d.length;a++)c=d[a],e=c._getVersion,e=e(c._source),null==b.mutableSourceEagerHydrationData?b.mutableSourceEagerHydrationData=[c,e]:b.mutableSourceEagerHydrationData.push(c,e);return new Ud(b)};Q.render=
 function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmountComponentAtNode=function(a){if(!Vd(a))throw Error(m(40));return a._reactRootContainer?(yb(function(){Wd(null,null,a,!1,function(){a._reactRootContainer=null;a[Ja]=null})}),!0):!1};Q.unstable_batchedUpdates=Tf;Q.unstable_renderSubtreeIntoContainer=function(a,b,c,d){if(!Vd(c))throw Error(m(200));if(null==a||void 0===a._reactInternals)throw Error(m(38));return Wd(a,b,c,!1,d)};Q.version="18.3.1-next-f1338f8080-20240426"});
 })();
-
+ 
 </script>
 <script>
 const { useState, useEffect, useRef, useMemo } = React;
@@ -1033,6 +1040,19 @@ function App() {
       jsonpRequest(syncUrl, { action: "resetEvents" }).catch((e) => console.error("Errore reset remoto", e));
     }
   }
+  function resetSession() {
+    const toRemove = events.filter((e) => eventDateOf(e) === sessionDate);
+    if (toRemove.length === 0) {
+      showToast("Nessun pallone in questa sessione");
+      return;
+    }
+    if (!window.confirm(`Cancellare i ${toRemove.length} palloni della sessione del ${periodLabel(sessionDate, "day")}? Le altre date restano intatte.`)) return;
+    toRemove.forEach((e) => deletedIdsRef.current.add(e.id));
+    setEvents((prev) => prev.filter((e) => eventDateOf(e) !== sessionDate));
+    if (syncStatus === "connected" && syncUrl) {
+      jsonpRequest(syncUrl, { action: "resetSessionEvents", date: sessionDate }).catch((e) => console.error("Errore reset sessione remoto", e));
+    }
+  }
   function downloadCSV(filename, csvString) {
     const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -1071,7 +1091,7 @@ function App() {
     rows.forEach((r) => {
       lines.push([
         csvEscape(playerName(r.playerId)),
-        csvEscape(setterName(r.setterId)),
+        csvEscape(r.setterLabel),
         csvEscape(r.team),
         r.tot,
         r.point,
@@ -1129,15 +1149,17 @@ function App() {
   const rows = useMemo(() => {
     const map = {};
     filteredEvents.forEach((ev) => {
-      const key = ev.playerId + "|" + ev.setterId;
-      if (!map[key]) map[key] = { playerId: ev.playerId, setterId: ev.setterId, team: ev.team, events: [] };
+      const key = ev.playerId;
+      if (!map[key]) map[key] = { playerId: ev.playerId, team: ev.team, events: [], setterIds: /* @__PURE__ */ new Set() };
       map[key].events.push(ev);
+      map[key].setterIds.add(ev.setterId);
     });
     let out = Object.values(map).map((g) => {
       const c = countsFor(g.events);
+      const setterLabel = g.setterIds.size === 1 ? setterName(Array.from(g.setterIds)[0]) : "Tutti";
       return {
         playerId: g.playerId,
-        setterId: g.setterId,
+        setterLabel,
         team: g.team,
         ...c,
         pos: pct(c.point, c.tot),
@@ -1151,8 +1173,8 @@ function App() {
         av = playerName(a.playerId);
         bv = playerName(b.playerId);
       } else if (sortKey === "setter") {
-        av = setterName(a.setterId);
-        bv = setterName(b.setterId);
+        av = a.setterLabel;
+        bv = b.setterLabel;
       } else if (sortKey === "pos") {
         av = (_a2 = a.pos) != null ? _a2 : -Infinity;
         bv = (_b = b.pos) != null ? _b : -Infinity;
@@ -1188,6 +1210,7 @@ function App() {
       };
     });
   }, [filteredEvents, periodGroup]);
+  const sessionEventsCount = useMemo(() => events.filter((e) => eventDateOf(e) === sessionDate).length, [events, sessionDate]);
   function toggleSort(key) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
     else {
@@ -1217,7 +1240,7 @@ function App() {
       value: syncUrlDraft,
       onChange: (e) => setSyncUrlDraft(e.target.value)
     }
-  ), syncStatus === "connected" ? /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: disconnectSync }, "Disconnetti") : /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => connectSync(syncUrlDraft), disabled: syncStatus === "connecting" }, syncStatus === "connecting" ? "Connessione\u2026" : "Connetti"), syncStatus === "connected" && /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => pullEvents(syncUrl) }, "Sincronizza ora")), /* @__PURE__ */ React.createElement("div", { className: "sync-status-line" }, syncStatus === "connected" && /* @__PURE__ */ React.createElement(React.Fragment, null, "Connesso al foglio condiviso \u2014 ", /* @__PURE__ */ React.createElement("b", null, players.length, " attaccanti"), ", ", /* @__PURE__ */ React.createElement("b", null, setters.length, " alzatori"), ", ", /* @__PURE__ */ React.createElement("b", null, events.length, " palloni"), " sincronizzati. ", lastSyncAt && "Ultimo aggiornamento: " + new Date(lastSyncAt).toLocaleTimeString("it-IT")), syncStatus === "error" && /* @__PURE__ */ React.createElement(React.Fragment, null, "Connessione non riuscita: ", syncError, `. Verifica di aver incollato l'URL corretto e che il Web App sia pubblicato con accesso "Chiunque abbia il link".`), syncStatus === "connecting" && "Connessione al foglio in corso\u2026", syncStatus === "disconnected" && "Nessuna condivisione attiva: i dati restano solo su questo dispositivo. Incolla il link del Web App di Google Apps Script per abilitare la sincronizzazione in tempo reale tra pi\xF9 dispositivi.")), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "00"), " Nomi squadra & alzatori"), /* @__PURE__ */ React.createElement("div", { className: "setup" + (setupOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("div", { className: "setup-grid" }, /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Attaccanti (10) \u2014 squadra"), players.map((p) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: p.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: p.name, onChange: (e) => updatePlayerName(p.id, e.target.value) }), /* @__PURE__ */ React.createElement("div", { className: "team-toggle" }, /* @__PURE__ */ React.createElement("button", { className: p.team === "A" ? "active-a" : "", onClick: () => updatePlayerTeam(p.id, "A") }, "A"), /* @__PURE__ */ React.createElement("button", { className: p.team === "B" ? "active-b" : "", onClick: () => updatePlayerTeam(p.id, "B") }, "B"))))), /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Alzatori (", setters.length, ")"), setters.map((s) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: s.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: s.name, onChange: (e) => updateSetterName(s.id, e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16, fontSize: 12.5, color: "var(--chalk-dim)", lineHeight: 1.5 } }, "Assegna ogni attaccante a squadra A o B qui a fianco. In campo, seleziona per ciascuna squadra l'alzatore attualmente in gioco: ogni pallone registrato verr\xE0 associato a quell'alzatore.")))), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "01"), " Registrazione palloni"), /* @__PURE__ */ React.createElement("div", { className: "session-date-row" }, /* @__PURE__ */ React.createElement("label", null, "Data sessione"), /* @__PURE__ */ React.createElement("input", { type: "date", value: sessionDate, onChange: (e) => setSessionDate(e.target.value) }), /* @__PURE__ */ React.createElement("span", { className: "session-date-hint" }, "Verr\xE0 associata a tutti i palloni registrati ora \u2014 cambiala a inizio di ogni allenamento o gara.")), /* @__PURE__ */ React.createElement("div", { className: "courts" }, ["A", "B"].map((team) => /* @__PURE__ */ React.createElement("div", { className: "court team-" + team.toLowerCase(), key: team }, /* @__PURE__ */ React.createElement("div", { className: "court-head" }, /* @__PURE__ */ React.createElement("div", { className: "court-name" }, "Squadra ", team), /* @__PURE__ */ React.createElement("div", { className: "setter-select" }, /* @__PURE__ */ React.createElement("label", null, "Alzatore"), /* @__PURE__ */ React.createElement("select", { value: activeSetter[team] || "", onChange: (e) => setActiveSetter((prev) => ({ ...prev, [team]: e.target.value })) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"), setters.map((s) => /* @__PURE__ */ React.createElement("option", { value: s.id, key: s.id }, s.name))))), playersByTeam(team).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "no-players" }, 'Nessun attaccante assegnato a questa squadra. Usa "Roster & alzatori".'), playersByTeam(team).map((p) => {
+  ), syncStatus === "connected" ? /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: disconnectSync }, "Disconnetti") : /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => connectSync(syncUrlDraft), disabled: syncStatus === "connecting" }, syncStatus === "connecting" ? "Connessione\u2026" : "Connetti"), syncStatus === "connected" && /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => pullEvents(syncUrl) }, "Sincronizza ora")), /* @__PURE__ */ React.createElement("div", { className: "sync-status-line" }, syncStatus === "connected" && /* @__PURE__ */ React.createElement(React.Fragment, null, "Connesso al foglio condiviso \u2014 ", /* @__PURE__ */ React.createElement("b", null, players.length, " attaccanti"), ", ", /* @__PURE__ */ React.createElement("b", null, setters.length, " alzatori"), ", ", /* @__PURE__ */ React.createElement("b", null, events.length, " palloni"), " sincronizzati. ", lastSyncAt && "Ultimo aggiornamento: " + new Date(lastSyncAt).toLocaleTimeString("it-IT")), syncStatus === "error" && /* @__PURE__ */ React.createElement(React.Fragment, null, "Connessione non riuscita: ", syncError, `. Verifica di aver incollato l'URL corretto e che il Web App sia pubblicato con accesso "Chiunque abbia il link".`), syncStatus === "connecting" && "Connessione al foglio in corso\u2026", syncStatus === "disconnected" && "Nessuna condivisione attiva: i dati restano solo su questo dispositivo. Incolla il link del Web App di Google Apps Script per abilitare la sincronizzazione in tempo reale tra pi\xF9 dispositivi.")), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "00"), " Nomi squadra & alzatori"), /* @__PURE__ */ React.createElement("div", { className: "setup" + (setupOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("div", { className: "setup-grid" }, /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Attaccanti (10) \u2014 squadra"), players.map((p) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: p.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: p.name, onChange: (e) => updatePlayerName(p.id, e.target.value) }), /* @__PURE__ */ React.createElement("div", { className: "team-toggle" }, /* @__PURE__ */ React.createElement("button", { className: p.team === "A" ? "active-a" : "", onClick: () => updatePlayerTeam(p.id, "A") }, "A"), /* @__PURE__ */ React.createElement("button", { className: p.team === "B" ? "active-b" : "", onClick: () => updatePlayerTeam(p.id, "B") }, "B"))))), /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Alzatori (", setters.length, ")"), setters.map((s) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: s.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: s.name, onChange: (e) => updateSetterName(s.id, e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16, fontSize: 12.5, color: "var(--chalk-dim)", lineHeight: 1.5 } }, "Assegna ogni attaccante a squadra A o B qui a fianco. In campo, seleziona per ciascuna squadra l'alzatore attualmente in gioco: ogni pallone registrato verr\xE0 associato a quell'alzatore.")))), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "01"), " Registrazione palloni"), /* @__PURE__ */ React.createElement("div", { className: "session-date-row" }, /* @__PURE__ */ React.createElement("label", null, "Data sessione"), /* @__PURE__ */ React.createElement("input", { type: "date", value: sessionDate, onChange: (e) => setSessionDate(e.target.value) }), /* @__PURE__ */ React.createElement("span", { className: "session-date-hint" }, "Verr\xE0 associata a tutti i palloni registrati ora \u2014 cambiala a inizio di ogni allenamento o gara."), /* @__PURE__ */ React.createElement("span", { className: "session-count" }, sessionEventsCount, " pall. in questa sessione"), /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: resetSession, disabled: sessionEventsCount === 0 }, "Reset sessione")), /* @__PURE__ */ React.createElement("div", { className: "courts" }, ["A", "B"].map((team) => /* @__PURE__ */ React.createElement("div", { className: "court team-" + team.toLowerCase(), key: team }, /* @__PURE__ */ React.createElement("div", { className: "court-head" }, /* @__PURE__ */ React.createElement("div", { className: "court-name" }, "Squadra ", team), /* @__PURE__ */ React.createElement("div", { className: "setter-select" }, /* @__PURE__ */ React.createElement("label", null, "Alzatore"), /* @__PURE__ */ React.createElement("select", { value: activeSetter[team] || "", onChange: (e) => setActiveSetter((prev) => ({ ...prev, [team]: e.target.value })) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"), setters.map((s) => /* @__PURE__ */ React.createElement("option", { value: s.id, key: s.id }, s.name))))), playersByTeam(team).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "no-players" }, 'Nessun attaccante assegnato a questa squadra. Usa "Roster & alzatori".'), playersByTeam(team).map((p) => {
     const myEvents = events.filter((e) => e.playerId === p.id);
     return /* @__PURE__ */ React.createElement("div", { className: "attacker-card", key: p.id }, /* @__PURE__ */ React.createElement("div", { className: "attacker-top" }, /* @__PURE__ */ React.createElement("div", { className: "attacker-name" }, p.name), /* @__PURE__ */ React.createElement("div", { className: "attacker-count" }, myEvents.length, " palloni")), /* @__PURE__ */ React.createElement("div", { className: "code-row" }, CODES.map((c) => /* @__PURE__ */ React.createElement(
       "button",
@@ -1234,8 +1257,9 @@ function App() {
     setFilterSetter("ALL");
     setFilterDateFrom("");
     setFilterDateTo("");
-  } }, "Pulisci filtri")), /* @__PURE__ */ React.createElement("div", { className: "kpi-row" }, /* @__PURE__ */ React.createElement("div", { className: "kpi" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "Palloni totali"), /* @__PURE__ */ React.createElement("div", { className: "val" }, overall.tot)), /* @__PURE__ */ React.createElement("div", { className: "kpi" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "Punti (#)"), /* @__PURE__ */ React.createElement("div", { className: "val", style: { color: "var(--c-point)" } }, overall.point)), /* @__PURE__ */ React.createElement("div", { className: "kpi" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "Positivit\xE0"), /* @__PURE__ */ React.createElement("div", { className: "val pos" }, fmtPct(overallPos))), /* @__PURE__ */ React.createElement("div", { className: "kpi" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "Efficienza"), /* @__PURE__ */ React.createElement("div", { className: "val eff" }, fmtPct(overallEff)))), /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "table-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "stat-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("player") }, "Attaccante"), /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("setter") }, "Alzatore"), /* @__PURE__ */ React.createElement("th", null, "Squadra"), /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("tot") }, "Tot"), /* @__PURE__ */ React.createElement("th", null, "#"), /* @__PURE__ */ React.createElement("th", null, "+"), /* @__PURE__ */ React.createElement("th", null, "!"), /* @__PURE__ */ React.createElement("th", null, "/"), /* @__PURE__ */ React.createElement("th", null, "-"), /* @__PURE__ */ React.createElement("th", null, "="), /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("pos") }, "Positivit\xE0"), /* @__PURE__ */ React.createElement("th", { className: "bar-cell" }), /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("eff") }, "Efficienza"), /* @__PURE__ */ React.createElement("th", { className: "bar-cell" }))), /* @__PURE__ */ React.createElement("tbody", null, rows.length === 0 && /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { colSpan: "13" }, /* @__PURE__ */ React.createElement("div", { className: "empty-note" }, "Nessun pallone registrato ancora per questo filtro."))), rows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.playerId + r.setterId }, /* @__PURE__ */ React.createElement("td", null, playerName(r.playerId)), /* @__PURE__ */ React.createElement("td", null, setterName(r.setterId)), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.team), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.tot), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.point), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.free), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.covered), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.blockpt), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.dug), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.error), /* @__PURE__ */ React.createElement("td", { className: "pos-cell" }, fmtPct(r.pos)), /* @__PURE__ */ React.createElement("td", { className: "bar-cell" }, /* @__PURE__ */ React.createElement("div", { className: "bar-track" }, /* @__PURE__ */ React.createElement("div", { className: "bar-fill", style: { width: (r.pos || 0) + "%" } }))), /* @__PURE__ */ React.createElement("td", { className: "eff-cell" }, fmtPct(r.eff)), /* @__PURE__ */ React.createElement("td", { className: "bar-cell" }, /* @__PURE__ */ React.createElement("div", { className: "bar-track" }, /* @__PURE__ */ React.createElement("div", { className: "bar-fill eff", style: { width: Math.max(0, Math.min(100, r.eff || 0)) + "%" } }))))))))), /* @__PURE__ */ React.createElement("div", { className: "stats-controls", style: { marginTop: 22 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", null, "Raggruppa per"), /* @__PURE__ */ React.createElement("select", { value: periodGroup, onChange: (e) => setPeriodGroup(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "day" }, "Giorno"), /* @__PURE__ */ React.createElement("option", { value: "week" }, "Settimana"), /* @__PURE__ */ React.createElement("option", { value: "month" }, "Mese")))), /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "table-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "stat-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Periodo"), /* @__PURE__ */ React.createElement("th", null, "Tot"), /* @__PURE__ */ React.createElement("th", null, "#"), /* @__PURE__ */ React.createElement("th", null, "+"), /* @__PURE__ */ React.createElement("th", null, "!"), /* @__PURE__ */ React.createElement("th", null, "/"), /* @__PURE__ */ React.createElement("th", null, "-"), /* @__PURE__ */ React.createElement("th", null, "="), /* @__PURE__ */ React.createElement("th", null, "Positivit\xE0"), /* @__PURE__ */ React.createElement("th", null, "Efficienza"))), /* @__PURE__ */ React.createElement("tbody", null, periodRows.length === 0 && /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { colSpan: "9" }, /* @__PURE__ */ React.createElement("div", { className: "empty-note" }, "Nessun dato per questo periodo/filtro."))), periodRows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.key }, /* @__PURE__ */ React.createElement("td", null, r.label), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.tot), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.point), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.free), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.covered), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.blockpt), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.dug), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.error), /* @__PURE__ */ React.createElement("td", { className: "pos-cell" }, fmtPct(r.pos)), /* @__PURE__ */ React.createElement("td", { className: "eff-cell" }, fmtPct(r.eff)))))))), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "03"), " Radar attaccante \xD7 alzatore"), /* @__PURE__ */ React.createElement("div", { className: "radar-wrap" }, players.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "radar-empty" }, "Nessun attaccante configurato.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "radar-controls" }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: 11, textTransform: "uppercase", letterSpacing: "1px", color: "var(--chalk-dim)" } }, "Attaccante"), /* @__PURE__ */ React.createElement("select", { value: effectiveRadarPlayer, onChange: (e) => setRadarPlayerId(e.target.value) }, players.map((p) => /* @__PURE__ */ React.createElement("option", { value: p.id, key: p.id }, p.name, " (squadra ", p.team, ")")))), /* @__PURE__ */ React.createElement("div", { className: "radar-chart-box" }, radarDataSets.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "radar-empty" }, "Nessun pallone registrato per questo attaccante.") : /* @__PURE__ */ React.createElement(RadarChart, { dataSets: radarDataSets }))), /* @__PURE__ */ React.createElement("div", { className: "radar-legend" }, radarDataSets.length === 0 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "var(--chalk-dim)" } }, "Registra qualche pallone per vedere il profilo per alzatore."), radarDataSets.map((ds) => /* @__PURE__ */ React.createElement("div", { className: "radar-legend-item", key: ds.id }, /* @__PURE__ */ React.createElement("span", { className: "sq", style: { background: ds.color } }), /* @__PURE__ */ React.createElement("span", { className: "rl-name" }, ds.label), /* @__PURE__ */ React.createElement("span", { className: "rl-n" }, ds.tot, " pall."))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: "var(--chalk-dim)", lineHeight: 1.5, marginTop: 4 } }, `Ogni asse \xE8 la quota % di quel codice sul totale attacchi dell'attaccante con quell'alzatore (storico completo, non filtrato per data). Poligoni pi\xF9 ampi verso "#" indicano un rendimento migliore con quell'alzatore.`)))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14, fontSize: 11.5, color: "var(--chalk-dim)", lineHeight: 1.6 } }, 'Positivit\xE0 = # \xF7 totale attacchi \xA0\xB7\xA0 Efficienza = [# \u2212 (errori "=" + muri subiti "/")] \xF7 totale attacchi \xA0\xB7\xA0 I dati sono salvati automaticamente su questo dispositivo.'), /* @__PURE__ */ React.createElement("div", { className: "toast" + (toast ? " show" : "") }, toast));
+  } }, "Pulisci filtri")), /* @__PURE__ */ React.createElement("div", { className: "kpi-row" }, /* @__PURE__ */ React.createElement("div", { className: "kpi" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "Palloni totali"), /* @__PURE__ */ React.createElement("div", { className: "val" }, overall.tot)), /* @__PURE__ */ React.createElement("div", { className: "kpi" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "Punti (#)"), /* @__PURE__ */ React.createElement("div", { className: "val", style: { color: "var(--c-point)" } }, overall.point)), /* @__PURE__ */ React.createElement("div", { className: "kpi" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "Positivit\xE0"), /* @__PURE__ */ React.createElement("div", { className: "val pos" }, fmtPct(overallPos))), /* @__PURE__ */ React.createElement("div", { className: "kpi" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "Efficienza"), /* @__PURE__ */ React.createElement("div", { className: "val eff" }, fmtPct(overallEff)))), /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "table-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "stat-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("player") }, "Attaccante"), /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("setter") }, "Alzatore"), /* @__PURE__ */ React.createElement("th", null, "Squadra"), /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("tot") }, "Tot"), /* @__PURE__ */ React.createElement("th", null, "#"), /* @__PURE__ */ React.createElement("th", null, "+"), /* @__PURE__ */ React.createElement("th", null, "!"), /* @__PURE__ */ React.createElement("th", null, "/"), /* @__PURE__ */ React.createElement("th", null, "-"), /* @__PURE__ */ React.createElement("th", null, "="), /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("pos") }, "Positivit\xE0"), /* @__PURE__ */ React.createElement("th", { className: "bar-cell" }), /* @__PURE__ */ React.createElement("th", { onClick: () => toggleSort("eff") }, "Efficienza"), /* @__PURE__ */ React.createElement("th", { className: "bar-cell" }))), /* @__PURE__ */ React.createElement("tbody", null, rows.length === 0 && /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { colSpan: "13" }, /* @__PURE__ */ React.createElement("div", { className: "empty-note" }, "Nessun pallone registrato ancora per questo filtro."))), rows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.playerId }, /* @__PURE__ */ React.createElement("td", null, playerName(r.playerId)), /* @__PURE__ */ React.createElement("td", null, r.setterLabel), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.team), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.tot), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.point), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.free), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.covered), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.blockpt), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.dug), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.error), /* @__PURE__ */ React.createElement("td", { className: "pos-cell" }, fmtPct(r.pos)), /* @__PURE__ */ React.createElement("td", { className: "bar-cell" }, /* @__PURE__ */ React.createElement("div", { className: "bar-track" }, /* @__PURE__ */ React.createElement("div", { className: "bar-fill", style: { width: (r.pos || 0) + "%" } }))), /* @__PURE__ */ React.createElement("td", { className: "eff-cell" }, fmtPct(r.eff)), /* @__PURE__ */ React.createElement("td", { className: "bar-cell" }, /* @__PURE__ */ React.createElement("div", { className: "bar-track" }, /* @__PURE__ */ React.createElement("div", { className: "bar-fill eff", style: { width: Math.max(0, Math.min(100, r.eff || 0)) + "%" } }))))))))), /* @__PURE__ */ React.createElement("div", { className: "stats-controls", style: { marginTop: 22 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", null, "Raggruppa per"), /* @__PURE__ */ React.createElement("select", { value: periodGroup, onChange: (e) => setPeriodGroup(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "day" }, "Giorno"), /* @__PURE__ */ React.createElement("option", { value: "week" }, "Settimana"), /* @__PURE__ */ React.createElement("option", { value: "month" }, "Mese")))), /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "table-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "stat-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Periodo"), /* @__PURE__ */ React.createElement("th", null, "Tot"), /* @__PURE__ */ React.createElement("th", null, "#"), /* @__PURE__ */ React.createElement("th", null, "+"), /* @__PURE__ */ React.createElement("th", null, "!"), /* @__PURE__ */ React.createElement("th", null, "/"), /* @__PURE__ */ React.createElement("th", null, "-"), /* @__PURE__ */ React.createElement("th", null, "="), /* @__PURE__ */ React.createElement("th", null, "Positivit\xE0"), /* @__PURE__ */ React.createElement("th", null, "Efficienza"))), /* @__PURE__ */ React.createElement("tbody", null, periodRows.length === 0 && /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { colSpan: "9" }, /* @__PURE__ */ React.createElement("div", { className: "empty-note" }, "Nessun dato per questo periodo/filtro."))), periodRows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.key }, /* @__PURE__ */ React.createElement("td", null, r.label), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.tot), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.point), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.free), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.covered), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.blockpt), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.dug), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.error), /* @__PURE__ */ React.createElement("td", { className: "pos-cell" }, fmtPct(r.pos)), /* @__PURE__ */ React.createElement("td", { className: "eff-cell" }, fmtPct(r.eff)))))))), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "03"), " Radar attaccante \xD7 alzatore"), /* @__PURE__ */ React.createElement("div", { className: "radar-wrap" }, players.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "radar-empty" }, "Nessun attaccante configurato.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "radar-controls" }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: 11, textTransform: "uppercase", letterSpacing: "1px", color: "var(--chalk-dim)" } }, "Attaccante"), /* @__PURE__ */ React.createElement("select", { value: effectiveRadarPlayer, onChange: (e) => setRadarPlayerId(e.target.value) }, players.map((p) => /* @__PURE__ */ React.createElement("option", { value: p.id, key: p.id }, p.name, " (squadra ", p.team, ")")))), /* @__PURE__ */ React.createElement("div", { className: "radar-chart-box" }, radarDataSets.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "radar-empty" }, "Nessun pallone registrato per questo attaccante.") : /* @__PURE__ */ React.createElement(RadarChart, { dataSets: radarDataSets }))), /* @__PURE__ */ React.createElement("div", { className: "radar-legend" }, radarDataSets.length === 0 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "var(--chalk-dim)" } }, "Registra qualche pallone per vedere il profilo per alzatore."), radarDataSets.map((ds) => /* @__PURE__ */ React.createElement("div", { className: "radar-legend-item", key: ds.id }, /* @__PURE__ */ React.createElement("span", { className: "sq", style: { background: ds.color } }), /* @__PURE__ */ React.createElement("span", { className: "rl-name" }, ds.label), /* @__PURE__ */ React.createElement("span", { className: "rl-n" }, ds.tot, " pall."))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: "var(--chalk-dim)", lineHeight: 1.5, marginTop: 4 } }, `Ogni asse \xE8 la quota % di quel codice sul totale attacchi dell'attaccante con quell'alzatore (storico completo, non filtrato per data). Poligoni pi\xF9 ampi verso "#" indicano un rendimento migliore con quell'alzatore.`)))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14, fontSize: 11.5, color: "var(--chalk-dim)", lineHeight: 1.6 } }, 'Positivit\xE0 = # \xF7 totale attacchi \xA0\xB7\xA0 Efficienza = [# \u2212 (errori "=" + muri subiti "/")] \xF7 totale attacchi \xA0\xB7\xA0 I dati sono salvati automaticamente su questo dispositivo.'), /* @__PURE__ */ React.createElement("div", { className: "toast" + (toast ? " show" : "") }, toast));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/* @__PURE__ */ React.createElement(App, null));
-
+ 
 </script>
+ 
