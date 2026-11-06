@@ -307,6 +307,12 @@
     font-family:'JetBrains Mono',monospace; z-index:50;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+  .attacker-card{transition:border-color .15s ease, box-shadow .15s ease;}
+  .attacker-card.last-hit{border-color:var(--parquet); box-shadow:0 0 0 1px var(--parquet), 0 0 16px rgba(201,135,63,.4); background:#1b1610;}
+  .last-chip{display:inline-block; margin-right:8px; padding:2px 8px; border-radius:20px; background:var(--parquet); color:#20140a; font-weight:700; font-size:11px;}
+  .code-btn.dimmed{opacity:.45;}
+  .code-btn.pressed{outline:3px solid #fff; outline-offset:2px; transform:scale(1.12); box-shadow:0 0 16px rgba(255,255,255,.6); position:relative; z-index:1;}
+  .code-btn.pressed::after{content:"\2713"; position:absolute; top:-9px; right:-7px; width:17px; height:17px; border-radius:50%; background:#fff; color:#10161d; font-size:11px; line-height:17px; text-align:center;}
 </style>
 <div id="root"></div>
 <script>
@@ -813,6 +819,7 @@ function App() {
   const [activeSetter, setActiveSetter] = useState({ A: "s1", B: "s2" });
   const [events, setEvents] = useState([]);
   const [sessionDate, setSessionDate] = useState(todayISO());
+  const [lastLoggedId, setLastLoggedId] = useState(null);
   const [setupOpen, setSetupOpen] = useState(true);
   const [toast, setToast] = useState("");
   const toastTimer = useRef(null);
@@ -1010,6 +1017,7 @@ function App() {
     }
     const ev = { id: "e" + Date.now() + Math.random().toString(16).slice(2), team, playerId, setterId, code, ts: Date.now(), date: sessionDate };
     setEvents((prev) => [...prev, ev]);
+    setLastLoggedId(ev.id);
     const pname = ((_a2 = players.find((p) => p.id === playerId)) == null ? void 0 : _a2.name) || "";
     showToast(pname + " \u2192 " + code);
     if (syncStatus === "connected" && syncUrl) {
@@ -1027,7 +1035,55 @@ function App() {
       }).catch((e) => console.error("Errore invio pallone", e));
     }
   }
+  function downloadFile(filename, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function exportBackup() {
+    const data = { app: "regia-attacco", version: 1, exportedAt: new Date().toISOString(), players, setters, activeSetter, events, sessionDate };
+    downloadFile("regia-attacco-backup-" + todayISO() + ".json", JSON.stringify(data), "application/json");
+    showToast("Backup salvato (" + events.length + " palloni)");
+  }
+  function importBackup() {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = ".json,application/json";
+    inp.onchange = () => {
+      const file = inp.files && inp.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (data.app !== "regia-attacco" || !Array.isArray(data.events)) throw new Error("File non valido");
+          if (!window.confirm("Ripristinare il backup con " + data.events.length + " palloni? Nomi e roster verranno sostituiti; i palloni gi\xE0 presenti resteranno (nessun duplicato).")) return;
+          if (data.players && data.players.length) setPlayers(data.players);
+          if (data.setters && data.setters.length) setSetters(ensureMinSetters(data.setters, 4));
+          if (data.activeSetter) setActiveSetter(data.activeSetter);
+          setEvents((prev) => {
+            const map = new Map();
+            prev.forEach((e) => map.set(e.id, e));
+            data.events.forEach((e) => { if (e && e.id) map.set(String(e.id), { ...e, id: String(e.id) }); });
+            return Array.from(map.values()).sort((a, b) => a.ts - b.ts);
+          });
+          showToast("Backup ripristinato");
+        } catch (err) {
+          window.alert("Impossibile leggere il backup: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    };
+    inp.click();
+  }
   function undoLast() {
+    setLastLoggedId(null);
     setEvents((prev) => {
       if (prev.length === 0) return prev;
       const last = prev[prev.length - 1];
@@ -1216,6 +1272,7 @@ function App() {
       };
     });
   }, [filteredEvents, periodGroup]);
+  const lastEvent = lastLoggedId ? events.find((e) => e.id === lastLoggedId) : null;
   const sessionEventsCount = useMemo(() => events.filter((e) => eventDateOf(e) === sessionDate).length, [events, sessionDate]);
   function toggleSort(key) {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
@@ -1238,7 +1295,7 @@ function App() {
   if (!loaded) {
     return /* @__PURE__ */ React.createElement("div", { style: { padding: "40px", textAlign: "center", color: "var(--chalk-dim)" } }, "Caricamento dati\u2026");
   }
-  return /* @__PURE__ */ React.createElement("div", { className: "wrap" }, /* @__PURE__ */ React.createElement("div", { className: "scoreboard" }, /* @__PURE__ */ React.createElement("div", { className: "sb-top" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "sb-title" }, "Regia Attacco", /* @__PURE__ */ React.createElement("span", { className: "sync-pill " + syncStatus }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), syncStatus === "connected" && "Condiviso", syncStatus === "connecting" && "Connessione\u2026", syncStatus === "error" && "Errore sync", syncStatus === "disconnected" && "Solo locale")), /* @__PURE__ */ React.createElement("div", { className: "sb-sub" }, "Qualit\xE0 attacco \xD7  correlazione alzatori \u2014 metodo SFERA")), /* @__PURE__ */ React.createElement("div", { className: "sb-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => setSyncOpen((o) => !o) }, syncOpen ? "Chiudi condivisione" : "Condivisione"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => setSetupOpen((o) => !o) }, setupOpen ? "Nascondi nomi" : "Modifica nomi"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportLogCSV, disabled: events.length === 0 }, "Esporta log CSV"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportSummaryCSV, disabled: rows.length === 0 }, "Esporta riepilogo CSV"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: undoLast, disabled: events.length === 0 }, "Annulla ultimo"), /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: resetAll, disabled: events.length === 0 }, "Reset palloni")))), /* @__PURE__ */ React.createElement("div", { className: "sync-panel" + (syncOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("div", { className: "sync-row" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "wrap" }, /* @__PURE__ */ React.createElement("div", { className: "scoreboard" }, /* @__PURE__ */ React.createElement("div", { className: "sb-top" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "sb-title" }, "Regia Attacco", /* @__PURE__ */ React.createElement("span", { className: "sync-pill " + syncStatus }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), syncStatus === "connected" && "Condiviso", syncStatus === "connecting" && "Connessione\u2026", syncStatus === "error" && "Errore sync", syncStatus === "disconnected" && "Solo locale")), /* @__PURE__ */ React.createElement("div", { className: "sb-sub" }, "Qualit\xE0 attacco \xD7  correlazione alzatori \u2014 metodo SFERA")), /* @__PURE__ */ React.createElement("div", { className: "sb-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => setSyncOpen((o) => !o) }, syncOpen ? "Chiudi condivisione" : "Condivisione"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => setSetupOpen((o) => !o) }, setupOpen ? "Nascondi nomi" : "Modifica nomi"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportLogCSV, disabled: events.length === 0 }, "Esporta log CSV"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportSummaryCSV, disabled: rows.length === 0 }, "Esporta riepilogo CSV"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: exportBackup }, "Salva backup"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: importBackup }, "Ripristina backup"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: undoLast, disabled: events.length === 0 }, "Annulla ultimo"), /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: resetAll, disabled: events.length === 0 }, "Reset palloni")))), /* @__PURE__ */ React.createElement("div", { className: "sync-panel" + (syncOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("div", { className: "sync-row" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -1248,11 +1305,12 @@ function App() {
     }
   ), syncStatus === "connected" ? /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: disconnectSync }, "Disconnetti") : /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => connectSync(syncUrlDraft), disabled: syncStatus === "connecting" }, syncStatus === "connecting" ? "Connessione\u2026" : "Connetti"), syncStatus === "connected" && /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => pullEvents(syncUrl) }, "Sincronizza ora")), /* @__PURE__ */ React.createElement("div", { className: "sync-status-line" }, syncStatus === "connected" && /* @__PURE__ */ React.createElement(React.Fragment, null, "Connesso al foglio condiviso \u2014 ", /* @__PURE__ */ React.createElement("b", null, players.length, " attaccanti"), ", ", /* @__PURE__ */ React.createElement("b", null, setters.length, " alzatori"), ", ", /* @__PURE__ */ React.createElement("b", null, events.length, " palloni"), " sincronizzati. ", lastSyncAt && "Ultimo aggiornamento: " + new Date(lastSyncAt).toLocaleTimeString("it-IT")), syncStatus === "error" && /* @__PURE__ */ React.createElement(React.Fragment, null, "Connessione non riuscita: ", syncError, `. Verifica di aver incollato l'URL corretto e che il Web App sia pubblicato con accesso "Chiunque abbia il link".`), syncStatus === "connecting" && "Connessione al foglio in corso\u2026", syncStatus === "disconnected" && "Nessuna condivisione attiva: i dati restano solo su questo dispositivo. Incolla il link del Web App di Google Apps Script per abilitare la sincronizzazione in tempo reale tra pi\xF9 dispositivi.")), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "00"), " Nomi squadra & alzatori"), /* @__PURE__ */ React.createElement("div", { className: "setup" + (setupOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("div", { className: "setup-grid" }, /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Attaccanti (10) \u2014 squadra"), players.map((p) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: p.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: p.name, onChange: (e) => updatePlayerName(p.id, e.target.value) }), /* @__PURE__ */ React.createElement("div", { className: "team-toggle" }, /* @__PURE__ */ React.createElement("button", { className: p.team === "A" ? "active-a" : "", onClick: () => updatePlayerTeam(p.id, "A") }, "A"), /* @__PURE__ */ React.createElement("button", { className: p.team === "B" ? "active-b" : "", onClick: () => updatePlayerTeam(p.id, "B") }, "B"))))), /* @__PURE__ */ React.createElement("div", { className: "setup-col" }, /* @__PURE__ */ React.createElement("h4", null, "Alzatori (", setters.length, ")"), setters.map((s) => /* @__PURE__ */ React.createElement("div", { className: "setup-row", key: s.id }, /* @__PURE__ */ React.createElement("input", { type: "text", value: s.name, onChange: (e) => updateSetterName(s.id, e.target.value) }))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16, fontSize: 12.5, color: "var(--chalk-dim)", lineHeight: 1.5 } }, "Assegna ogni attaccante a squadra A o B qui a fianco. In campo, seleziona per ciascuna squadra l'alzatore attualmente in gioco: ogni pallone registrato verr\xE0 associato a quell'alzatore.")))), /* @__PURE__ */ React.createElement("div", { className: "section-label" }, /* @__PURE__ */ React.createElement("span", { className: "num" }, "01"), " Registrazione palloni"), /* @__PURE__ */ React.createElement("div", { className: "session-date-row" }, /* @__PURE__ */ React.createElement("label", null, "Data sessione"), /* @__PURE__ */ React.createElement("input", { type: "date", value: sessionDate, onChange: (e) => setSessionDate(e.target.value) }), /* @__PURE__ */ React.createElement("span", { className: "session-date-hint" }, "Verr\xE0 associata a tutti i palloni registrati ora \u2014 cambiala a inizio di ogni allenamento o gara."), /* @__PURE__ */ React.createElement("span", { className: "session-count" }, sessionEventsCount, " pall. in questa sessione"), /* @__PURE__ */ React.createElement("button", { className: "btn warn", onClick: resetSession, disabled: sessionEventsCount === 0 }, "Reset sessione")), /* @__PURE__ */ React.createElement("div", { className: "courts" }, ["A", "B"].map((team) => /* @__PURE__ */ React.createElement("div", { className: "court team-" + team.toLowerCase(), key: team }, /* @__PURE__ */ React.createElement("div", { className: "court-head" }, /* @__PURE__ */ React.createElement("div", { className: "court-name" }, "Squadra ", team), /* @__PURE__ */ React.createElement("div", { className: "setter-select" }, /* @__PURE__ */ React.createElement("label", null, "Alzatore"), /* @__PURE__ */ React.createElement("select", { value: activeSetter[team] || "", onChange: (e) => setActiveSetter((prev) => ({ ...prev, [team]: e.target.value })) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"), setters.map((s) => /* @__PURE__ */ React.createElement("option", { value: s.id, key: s.id }, s.name))))), playersByTeam(team).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "no-players" }, 'Nessun attaccante assegnato a questa squadra. Usa "Roster & alzatori".'), playersByTeam(team).map((p) => {
     const myEvents = events.filter((e) => e.playerId === p.id);
-    return /* @__PURE__ */ React.createElement("div", { className: "attacker-card", key: p.id }, /* @__PURE__ */ React.createElement("div", { className: "attacker-top" }, /* @__PURE__ */ React.createElement("div", { className: "attacker-name" }, p.name), /* @__PURE__ */ React.createElement("div", { className: "attacker-count" }, myEvents.length, " palloni")), /* @__PURE__ */ React.createElement("div", { className: "code-row" }, CODES.map((c) => /* @__PURE__ */ React.createElement(
+    const isLastCard = !!lastEvent && lastEvent.playerId === p.id;
+    return /* @__PURE__ */ React.createElement("div", { className: "attacker-card" + (isLastCard ? " last-hit" : ""), key: p.id }, /* @__PURE__ */ React.createElement("div", { className: "attacker-top" }, /* @__PURE__ */ React.createElement("div", { className: "attacker-name" }, p.name), /* @__PURE__ */ React.createElement("div", { className: "attacker-count" }, isLastCard && /* @__PURE__ */ React.createElement("span", { className: "last-chip" }, "\u2713 ", lastEvent.code, " registrato"), myEvents.length, " palloni")), /* @__PURE__ */ React.createElement("div", { className: "code-row" }, CODES.map((c) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: c.code,
-        className: "code-btn " + c.cls,
+        className: "code-btn " + c.cls + (isLastCard ? (lastEvent.code === c.code ? " pressed" : " dimmed") : ""),
         title: c.label,
         onClick: () => logEvent(team, p.id, c.code)
       },
